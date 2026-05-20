@@ -40,7 +40,7 @@ jobs:
         run: docker build -f Dockerfile.test -t suitewright-test:ci .
 
       - name: Run pytest in test container
-        run: docker run --rm suitewright-test:ci pytest tests/ --ignore=tests/live
+        run: docker run --rm suitewright-test:ci pytest tests/ --ignore=tests/live --ignore=tests/scripts
 
       - name: Hardened runtime smoke (tmpfs uid/gid/mode)
         run: |

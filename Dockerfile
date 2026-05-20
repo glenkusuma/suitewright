@@ -5,7 +5,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Stage 1: Build with uv ───────────────────────────────────────────────────
-FROM ghcr.io/astral-sh/uv:0.7-python3.11-bookworm-slim@sha256:ab57624f560fe19a0581203516be05cae0b85cfdc43f29aaf892b44cd7a54b1f AS builder
+FROM ghcr.io/astral-sh/uv:0.9-python3.11-bookworm-slim@sha256:4f5d923c9dcea037f57bda425dd209f3ec643da2f0b74227f68d09dab0b3bb36 AS builder
 
 WORKDIR /build
 

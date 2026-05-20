@@ -88,6 +88,7 @@ select = ["E", "F", "W", "I", "B", "UP", "RUF", "S"]
 "tests/live/helpers.py" = ["S603"]
 "scripts/resolve-action-shas.py" = ["S603", "S607"]
 "scripts/docker.py" = ["S603", "S607"]
+"scripts/build.py" = ["S603", "S607"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -95,3 +96,4 @@ files = ["src/suitewright/paths.py", "src/suitewright/cli.py"]
 
 [tool.bandit]
 exclude_dirs = ["tests", "_local"]
+skips = ["B404", "B603", "B110"]

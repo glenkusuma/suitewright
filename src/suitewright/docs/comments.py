@@ -74,7 +74,7 @@ def cmd_list(args):
     service = build_service("drive", "v3")
     comments = []
     page_token = None
-    next_token = ""
+    next_token = ""  # nosec B105
 
     while True:
         request_kwargs: dict = {

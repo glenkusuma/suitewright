@@ -277,7 +277,7 @@ def cmd_revoke(args):
         creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
         if creds.expired and creds.refresh_token:
             creds.refresh(Request())
-        urllib.request.urlopen(
+        urllib.request.urlopen(  # nosec B310
             "https://oauth2.googleapis.com/revoke?token=" + creds.token,
             data=b"",
             timeout=10,

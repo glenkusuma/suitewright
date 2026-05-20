@@ -26,8 +26,8 @@ from typing import Literal
 
 Kind = Literal["token", "client_secret", "cache_dir", "root"]
 
-TOKEN_FILENAME = "google_token.json"
-CLIENT_SECRET_FILENAME = "google_client_secret.json"
+TOKEN_FILENAME = "google_token.json"  # nosec B105
+CLIENT_SECRET_FILENAME = "google_client_secret.json"  # nosec B105
 
 
 def _xdg_config_home() -> Path:

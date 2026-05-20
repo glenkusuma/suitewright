@@ -84,8 +84,6 @@ Cache resolution:
 
 In development, auth files are read from `SUITEWRIGHT_AUTH_DIR`. This defaults to `../suitewright-auth` relative to the detected repo root.
 
-**Repo-root `auth/` is banned.** Auth credentials must never live inside the repository tree. The `_detect_dev_root()` function does not check for `auth/` at the repo root, and preflight scripts hard-fail if one exists. Use `SUITEWRIGHT_AUTH_DIR` to point to a directory outside the repo:
-
 ```bash
 export SUITEWRIGHT_AUTH_DIR=/path/to/suitewright-auth
 suitewright auth check --json  # confirms mode: "dev"

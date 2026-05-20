@@ -1,0 +1,8 @@
+suitewright
+Copyright 2026 Glen Kusuma
+
+A portable Google Workspace CLI and workflow toolkit for humans and agents.
+
+This product depends on third-party libraries distributed under their own
+licenses. See https://github.com/googleapis/google-api-python-client and
+related Google Auth Python packages for their respective notices.

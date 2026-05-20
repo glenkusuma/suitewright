@@ -1,0 +1,19 @@
+# Gitleaks configuration for suitewright
+# Uses default rules; narrow allowlist for test fixtures only.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow fake tokens in test fixtures only"
+
+paths = [
+  '''tests/fixtures/.*''',
+]
+
+regexes = [
+  '''fake[-_]token''',
+  '''FAKE[-_]SECRET''',
+  '''test[-_]client[-_]secret''',
+  '''placeholder[-_](token|secret|key)''',
+]

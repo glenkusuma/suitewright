@@ -1,0 +1,27 @@
+# Version control
+.git/
+.github/
+
+# Python virtual environments and caches
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Build artifacts
+dist/
+build/
+
+# Local development and runtime data
+_local/
+auth/
+cache/
+
+# Environment and secrets
+.env
+*.session.*
+
+# AI/agent config (not needed in image)
+.claude/
+CLAUDE.md

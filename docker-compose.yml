@@ -1,0 +1,45 @@
+# docker-compose.yml — Hardened services for suitewright
+# Both services run read-only with all capabilities dropped and no-new-privileges.
+# Auth is mounted into the auth/ subdir only, sourced from SUITEWRIGHT_AUTH_DIR.
+
+services:
+  suitewright:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: suitewright:local
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - "no-new-privileges:true"
+    tmpfs:
+      - /home/suitewright/.cache/suitewright:uid=1000,gid=1000,mode=700
+      - /home/suitewright/runtime:uid=1000,gid=1000,mode=700
+      - /tmp:uid=1000,gid=1000,mode=700
+    volumes:
+      - ${SUITEWRIGHT_AUTH_DIR:-./../suitewright-auth}:/home/suitewright/.config/suitewright/auth:ro
+    environment:
+      - NO_COLOR=1
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    image: suitewright-test:local
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - "no-new-privileges:true"
+    tmpfs:
+      - /home/suitewright/.cache/suitewright:uid=1000,gid=1000,mode=700
+      - /home/suitewright/runtime:uid=1000,gid=1000,mode=700
+      - /tmp:uid=1000,gid=1000,mode=700
+    volumes:
+      - ${SUITEWRIGHT_AUTH_DIR:-./../suitewright-auth}:/home/suitewright/.config/suitewright/auth:ro
+      - ./tests:/app/tests:ro
+    environment:
+      - NO_COLOR=1
+      - PYTHONHASHSEED=0
+      - TZ=UTC

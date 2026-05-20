@@ -1,0 +1,31 @@
+# Python build / venv
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# Local cache snapshots (dev mode only)
+cache/*
+!cache/.gitkeep
+
+# Disposable scratch artifacts
+_local/
+
+# Agent harness files
+.claude/
+CLAUDE.md
+.kiro/
+.opencode/
+
+# Session / ephemeral artifacts
+*.session.json
+*.session.md
+
+# Local env (any level)
+.env
+
+# Auth credentials (never commit real secrets, any level)
+google_token.json
+google_client_secret.json

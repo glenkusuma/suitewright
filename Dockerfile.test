@@ -1,0 +1,25 @@
+# CI test runner image — deterministic, non-interactive, offline-capable
+# Digest pinned via: docker pull ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim@sha256:4f5d923c9dcea037f57bda425dd209f3ec643da2f0b74227f68d09dab0b3bb36
+
+WORKDIR /app
+
+# Copy dependency manifests and build metadata for layer caching
+COPY pyproject.toml uv.lock README.md LICENSE NOTICE ./
+
+# Copy source first (needed by uv sync for editable install)
+COPY src/ src/
+
+# Install dev dependencies (frozen lockfile, no network drift)
+RUN uv sync --frozen --extra dev
+
+# Copy tests
+COPY tests/ tests/
+
+# Deterministic environment for reproducible test runs
+ENV PYTHONHASHSEED=0 \
+    TZ=UTC \
+    NO_COLOR=1
+
+ENTRYPOINT ["uv", "run"]
+CMD ["pytest", "tests/", "--ignore=tests/live"]

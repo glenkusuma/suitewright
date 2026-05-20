@@ -1,0 +1,33 @@
+[
+  {
+    "createItem": {
+      "item": {
+        "title": "Question 1",
+        "questionItem": {
+          "question": {
+            "required": false,
+            "textQuestion": {}
+          }
+        }
+      },
+      "location": {"index": 0}
+    }
+  },
+  {
+    "createItem": {
+      "item": {
+        "title": "Question 2",
+        "questionItem": {
+          "question": {
+            "required": false,
+            "choiceQuestion": {
+              "type": "RADIO",
+              "options": [{"value": "Yes"}, {"value": "No"}]
+            }
+          }
+        }
+      },
+      "location": {"index": 1}
+    }
+  }
+]

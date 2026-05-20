@@ -1,0 +1,8 @@
+[
+  {"insertText": {"location": {"index": 1}, "text": "FIXTURE-INSERTED-LINE\n"}},
+  {"updateTextStyle": {
+    "range": {"startIndex": 1, "endIndex": 22},
+    "textStyle": {"bold": true},
+    "fields": "bold"
+  }}
+]

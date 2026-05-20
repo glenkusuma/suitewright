@@ -4,7 +4,9 @@ on:
   release:
     types: [published]
 
-permissions: {}
+permissions:
+  contents: write
+  actions: read
 
 concurrency:
   group: release-${{ github.ref }}

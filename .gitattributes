@@ -1,0 +1,6 @@
+# Docs fixture JSON (large API responses)
+tests/live/fixtures/docs/*.json filter=lfs diff=lfs merge=lfs -text
+# Exclude manifest from LFS (small, human-readable)
+tests/live/fixtures/docs/manifest.json !filter !diff !merge text
+# Exported formats (binary)
+tests/live/fixtures/docs/exports/**/* filter=lfs diff=lfs merge=lfs -text

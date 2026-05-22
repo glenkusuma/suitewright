@@ -206,10 +206,20 @@ class TestAvailableCapabilities:
 
     def test_returns_all_unique(self, mock_manifest):
         caps = available_capabilities()
-        expected = sorted({
-            "paragraphs", "tables", "inline_images", "positioned_images",
-            "lists", "headers", "footers", "heading_1", "heading_2", "heading_3",
-        })
+        expected = sorted(
+            {
+                "paragraphs",
+                "tables",
+                "inline_images",
+                "positioned_images",
+                "lists",
+                "headers",
+                "footers",
+                "heading_1",
+                "heading_2",
+                "heading_3",
+            }
+        )
         assert caps == expected
 
     def test_empty_manifest(self, tmp_path):

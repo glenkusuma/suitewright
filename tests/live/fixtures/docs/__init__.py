@@ -52,9 +52,7 @@ def get_manifest() -> dict:
     try:
         _manifest_cache = json.loads(manifest_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
-        raise RuntimeError(
-            f"Failed to parse manifest at {manifest_path}: {e}"
-        ) from e
+        raise RuntimeError(f"Failed to parse manifest at {manifest_path}: {e}") from e
 
     return _manifest_cache
 
@@ -81,15 +79,13 @@ def load_fixture(capability: str) -> dict:
             fixture_file = _FIXTURES_DIR / entry["file"]
             if not fixture_file.exists():
                 raise FileNotFoundError(
-                    f"Fixture file not found: {fixture_file} "
-                    f"(for fixture '{entry['name']}')"
+                    f"Fixture file not found: {fixture_file} (for fixture '{entry['name']}')"
                 )
             return json.loads(fixture_file.read_text(encoding="utf-8"))
 
     all_caps = available_capabilities()
     raise ValueError(
-        f"No fixture found with capability '{capability}'. "
-        f"Available capabilities: {all_caps}"
+        f"No fixture found with capability '{capability}'. Available capabilities: {all_caps}"
     )
 
 
@@ -114,16 +110,12 @@ def load_fixture_by_name(name: str) -> dict:
             fixture_file = _FIXTURES_DIR / entry["file"]
             if not fixture_file.exists():
                 raise FileNotFoundError(
-                    f"Fixture file not found: {fixture_file} "
-                    f"(for fixture '{name}')"
+                    f"Fixture file not found: {fixture_file} (for fixture '{name}')"
                 )
             return json.loads(fixture_file.read_text(encoding="utf-8"))
 
     all_names = [e["name"] for e in manifest.get("fixtures", [])]
-    raise ValueError(
-        f"No fixture found with name '{name}'. "
-        f"Available fixtures: {all_names}"
-    )
+    raise ValueError(f"No fixture found with name '{name}'. Available fixtures: {all_names}")
 
 
 def fixture_path(slug: str) -> Path:
@@ -164,10 +156,7 @@ def fixture_doc_id(slug: str) -> str:
             return entry["doc_id"]
 
     available = [e["file"].removesuffix(".json") for e in manifest.get("fixtures", [])]
-    raise ValueError(
-        f"No fixture found with slug '{slug}'. "
-        f"Available: {available}"
-    )
+    raise ValueError(f"No fixture found with slug '{slug}'. Available: {available}")
 
 
 def available_capabilities() -> list[str]:

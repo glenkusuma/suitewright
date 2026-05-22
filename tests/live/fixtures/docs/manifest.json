@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "fixtures": [
+    {
+      "name": "Request for Proposal",
+      "file": "request-for-proposal.json",
+      "capabilities": [
+        "footers",
+        "headers",
+        "heading_1",
+        "heading_2",
+        "inline_images",
+        "lists",
+        "paragraphs",
+        "positioned_images",
+        "tables"
+      ],
+      "stats": {
+        "paragraphs": 106,
+        "tables": 1,
+        "inline_images": 7,
+        "positioned_images": 1,
+        "lists": 35
+      },
+      "doc_id": "VCvpiJTZ7Sp_V79-Uh486_Yfa5nny8_n3eZkq7W8_bQ2"
+    },
+    {
+      "name": "Brochure",
+      "file": "brochure.json",
+      "capabilities": [
+        "footers",
+        "headers",
+        "heading_1",
+        "heading_2",
+        "heading_3",
+        "paragraphs",
+        "positioned_images"
+      ],
+      "stats": {
+        "paragraphs": 17,
+        "tables": 0,
+        "inline_images": 0,
+        "positioned_images": 5,
+        "lists": 0
+      },
+      "doc_id": "dfk5_IJW13ua5oPKct6chax7wsFvckiI7fdonhwFNdu7"
+    },
+    {
+      "name": "Statement of Work",
+      "file": "statement-of-work.json",
+      "capabilities": [
+        "headers",
+        "heading_1",
+        "heading_2",
+        "inline_images",
+        "lists",
+        "paragraphs",
+        "tables"
+      ],
+      "stats": {
+        "paragraphs": 59,
+        "tables": 4,
+        "inline_images": 2,
+        "positioned_images": 0,
+        "lists": 0
+      },
+      "doc_id": "PGGxlWLUB9RWNoeyB3wQk2gF61gI9ap4sIeZcs-79R5P"
+    },
+    {
+      "name": "Recipe",
+      "file": "recipe.json",
+      "capabilities": [
+        "heading_1",
+        "inline_images",
+        "lists",
+        "paragraphs"
+      ],
+      "stats": {
+        "paragraphs": 20,
+        "tables": 0,
+        "inline_images": 1,
+        "positioned_images": 0,
+        "lists": 10
+      },
+      "doc_id": "qYMz5Wyno4ETlcCA3elpPXFItlsIWI_mUZNfxkgnwLzU"
+    }
+  ]
+}

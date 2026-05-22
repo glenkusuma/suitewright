@@ -67,17 +67,19 @@ class TestEnvVarOverrides:
 
 
 class TestXDGDefaults:
-    def test_token_xdg_default(self, monkeypatch):
-        monkeypatch.setenv("XDG_CONFIG_HOME", "/tmp/xdg_config")
+    def test_token_xdg_default(self, monkeypatch, tmp_path):
+        xdg_config = tmp_path / "xdg_config"
+        monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_config))
         monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)
         result = paths.resolve("token")
-        assert str(result) == "/tmp/xdg_config/suitewright/auth/google_token.json"
+        assert result == xdg_config / "suitewright" / "auth" / "google_token.json"
 
-    def test_cache_dir_xdg_default(self, monkeypatch):
-        monkeypatch.setenv("XDG_CACHE_HOME", "/tmp/xdg_cache")
+    def test_cache_dir_xdg_default(self, monkeypatch, tmp_path):
+        xdg_cache = tmp_path / "xdg_cache"
+        monkeypatch.setenv("XDG_CACHE_HOME", str(xdg_cache))
         monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)
         result = paths.resolve("cache_dir")
-        assert str(result) == "/tmp/xdg_cache/suitewright"
+        assert result == xdg_cache / "suitewright"
 
     def test_token_home_fallback(self, monkeypatch):
         monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)

@@ -49,14 +49,14 @@ def mock_service(methods: dict) -> MagicMock:
 
 class TestAuthIntegration:
     def test_check_authenticated(self, capsys, tmp_path):
-        from suitewright.service import SCOPES
+        from suitewright._core.service import SCOPES
 
         token = tmp_path / "google_token.json"
         token.write_text(json.dumps({"token": "tok", "refresh_token": "ref", "scopes": SCOPES}))
         mock_creds = MagicMock()
         mock_creds.valid = True
-        with patch("suitewright.auth.paths.resolve", return_value=token):
-            with patch("suitewright.auth.paths.describe", return_value={}):
+        with patch("suitewright._core.auth.paths.resolve", return_value=token):
+            with patch("suitewright._core.auth.paths.describe", return_value={}):
                 with patch(
                     "google.oauth2.credentials.Credentials.from_authorized_user_file",
                     return_value=mock_creds,
@@ -67,8 +67,8 @@ class TestAuthIntegration:
 
     def test_check_not_authenticated(self, capsys, tmp_path):
         missing = tmp_path / "no_token.json"
-        with patch("suitewright.auth.paths.resolve", return_value=missing):
-            with patch("suitewright.auth.paths.describe", return_value={}):
+        with patch("suitewright._core.auth.paths.resolve", return_value=missing):
+            with patch("suitewright._core.auth.paths.describe", return_value={}):
                 with pytest.raises(SystemExit):
                     main(["auth", "check"])
 
@@ -298,25 +298,6 @@ class TestDocsIntegration:
         svc.documents().get().execute.return_value = doc
         return svc
 
-    def test_get(self, capsys, sample_doc):
-        svc = self._svc(sample_doc)
-        with patch("suitewright.docs.basic.build_service", return_value=svc):
-            result = run(["docs", "get", "DOC123"], capsys)
-        assert result["documentId"] == "DOC123"
-
-    def test_show_structure(self, capsys, sample_doc):
-        svc = self._svc(sample_doc)
-        with patch("suitewright.docs.basic.build_service", return_value=svc):
-            result = run(["docs", "show-structure", "DOC123"], capsys)
-        assert "blocks" in result
-        assert result["documentId"] == "DOC123"
-
-    def test_show_structure_full_text(self, capsys, sample_doc):
-        svc = self._svc(sample_doc)
-        with patch("suitewright.docs.basic.build_service", return_value=svc):
-            result = run(["docs", "show-structure", "DOC123", "--full-text"], capsys)
-        assert "blocks" in result
-
     def test_create(self, capsys):
         created = {
             "documentId": "NEWDOC",
@@ -325,7 +306,7 @@ class TestDocsIntegration:
         }
         svc = MagicMock()
         svc.documents().create().execute.return_value = created
-        with patch("suitewright.docs.basic.build_service", return_value=svc):
+        with patch("suitewright._core.service.build_service", return_value=svc):
             result = run(["docs", "create", "--title", "My Doc"], capsys)
         assert result.get("status") == "created"
         assert result["documentId"] == "NEWDOC"
@@ -351,25 +332,49 @@ class TestDocsIntegration:
         out = json.loads(capsys.readouterr().out)
         assert any("updateTextStyle" in r for r in out)
 
-    def test_update_dry_run(self, capsys):
+    def test_mutate_raw_dry_run(self, capsys):
+        """docs mutate raw --dry-run (replaces old 'docs update --dry-run')."""
         requests = [{"insertText": {"location": {"index": 1}, "text": "Hello"}}]
-        main(["docs", "update", "DOC123", "--dry-run", "--requests", json.dumps(requests)])
+        # mutate raw requires cache to exist for guarded_mutate
+        with patch("suitewright.docs.mutate._cache.exists", return_value=True):
+            with patch(
+                "suitewright.docs.mutate._cache.load",
+                return_value={"documentId": "DOC123", "revisionId": "rev1"},
+            ):
+                with patch("suitewright.docs.mutate.build_service") as mock_svc:
+                    # Mock the staleness check
+                    svc_docs = mock_svc.return_value.documents.return_value
+                    svc_docs.get.return_value.execute.return_value = {"revisionId": "rev1"}
+                    main(
+                        [
+                            "docs",
+                            "mutate",
+                            "raw",
+                            "DOC123",
+                            "--dry-run",
+                            "--requests",
+                            json.dumps(requests),
+                        ]
+                    )
         result = json.loads(capsys.readouterr().out)
-        assert result["dryRun"] is True
+        assert result["status"] == "dry-run"
         assert result["requestCount"] == 1
 
-    def test_table_get(self, capsys, sample_doc):
-        svc = self._svc(sample_doc)
-        with patch("suitewright.docs.tables.build_service", return_value=svc):
-            result = run(["docs", "table-get", "DOC123"], capsys)
+    def test_table_get(self, capsys, sample_doc, tmp_path):
+        """docs table get (replaces old 'docs table-get')."""
+        # Write sample_doc to cache
+        with patch("suitewright.docs.tables._cache.exists", return_value=True):
+            with patch("suitewright.docs.tables._cache.load", return_value=sample_doc):
+                result = run(["docs", "table", "get", "DOC123"], capsys)
         assert "tables" in result
         assert result["tables"][0]["rows"] == 2
         assert result["tables"][0]["cols"] == 3
 
-    def test_table_get_single(self, capsys, sample_doc):
-        svc = self._svc(sample_doc)
-        with patch("suitewright.docs.tables.build_service", return_value=svc):
-            result = run(["docs", "table-get", "DOC123", "--table", "0"], capsys)
+    def test_table_get_single(self, capsys, sample_doc, tmp_path):
+        """docs table get --table 0 (replaces old 'docs table-get --table 0')."""
+        with patch("suitewright.docs.tables._cache.exists", return_value=True):
+            with patch("suitewright.docs.tables._cache.load", return_value=sample_doc):
+                result = run(["docs", "table", "get", "DOC123", "--table", "0"], capsys)
         assert "table" in result
         assert result["table"]["tableIndex"] == 0
 

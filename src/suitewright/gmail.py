@@ -7,7 +7,7 @@ import base64
 import json
 from email.mime.text import MIMEText
 
-from suitewright.service import build_service
+from suitewright._core.service import build_service
 
 
 def cmd_search(args):

@@ -25,8 +25,8 @@ When installed as a package, auth files live in `~/.config/suitewright/auth/` by
 
 ## References
 
-- `references/gmail-search-syntax.md` - Gmail search operators (is:unread, from:, newer_than:, etc.)
-- `references/docs-request-template-styling.md` - reusable styling guidance for `docs request-template style-range`
+- [references/gmail-search-syntax.md](references/gmail-search-syntax.md) - Gmail search operators (is:unread, from:, newer_than:, etc.)
+- [references/docs-request-template-styling.md](references/docs-request-template-styling.md) - reusable styling guidance for `docs request-template style-range`
 
 ## First-Time Setup
 

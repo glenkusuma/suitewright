@@ -10,10 +10,13 @@ Disable with: SUITEWRIGHT_NO_UPDATE_CHECK=1
 from __future__ import annotations
 
 import json
+import logging
 import os
 import sys
 import time
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def _cache_path() -> Path:
@@ -30,7 +33,7 @@ def _read_cache() -> dict | None:
         if time.time() - data.get("checked_at", 0) < 86400:
             return data
     except Exception:
-        pass
+        logger.debug("Failed to read update check cache", exc_info=True)
     return None
 
 
@@ -43,7 +46,7 @@ def _write_cache(latest: str) -> None:
             encoding="utf-8",
         )
     except Exception:
-        pass
+        logger.debug("Failed to write update check cache", exc_info=True)
 
 
 def _fetch_latest() -> str | None:
@@ -96,4 +99,4 @@ def check_for_update(current_version: str) -> None:
                 file=sys.stderr,
             )
     except Exception:
-        pass
+        logger.debug("Update check failed", exc_info=True)

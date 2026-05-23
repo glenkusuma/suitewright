@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from suitewright.auth import (
+from suitewright._core.auth import (
     _extract_code_and_state,
     _missing_scopes_from_payload,
     _token_scopes,
 )
-from suitewright.service import SCOPES
+from suitewright._core.service import SCOPES
 
 
 class TestTokenScopes:

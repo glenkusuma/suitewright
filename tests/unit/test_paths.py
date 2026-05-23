@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from suitewright import paths
+from suitewright._core import paths
+from suitewright._core import paths as _core_paths
 
 
 @pytest.fixture(autouse=True)
@@ -70,19 +71,19 @@ class TestXDGDefaults:
     def test_token_xdg_default(self, monkeypatch, tmp_path):
         xdg_config = tmp_path / "xdg_config"
         monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_config))
-        monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)
+        monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: None)
         result = paths.resolve("token")
         assert result == xdg_config / "suitewright" / "auth" / "google_token.json"
 
     def test_cache_dir_xdg_default(self, monkeypatch, tmp_path):
         xdg_cache = tmp_path / "xdg_cache"
         monkeypatch.setenv("XDG_CACHE_HOME", str(xdg_cache))
-        monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)
+        monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: None)
         result = paths.resolve("cache_dir")
         assert result == xdg_cache / "suitewright"
 
     def test_token_home_fallback(self, monkeypatch):
-        monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)
+        monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: None)
         result = paths.resolve("token")
         assert "suitewright" in str(result)
         assert result.name == "google_token.json"
@@ -120,7 +121,7 @@ class TestDescribe:
         token_path = tmp_path / "my_token.json"
         token_path.write_text("{}")
         monkeypatch.setenv("SUITEWRIGHT_TOKEN", str(token_path))
-        monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)
+        monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: None)
         info = paths.describe()
         assert info["mode"] == "env"
         assert info["tokenExists"] is True
@@ -130,7 +131,7 @@ class TestDescribe:
         cs_path = tmp_path / "secret.json"
         cs_path.write_text("{}")
         monkeypatch.setenv("SUITEWRIGHT_CLIENT_SECRET", str(cs_path))
-        monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)
+        monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: None)
         info = paths.describe()
         assert info["mode"] == "env"
         assert info["clientSecretExists"] is True
@@ -138,7 +139,7 @@ class TestDescribe:
     def test_env_mode_with_cache_dir(self, monkeypatch, tmp_path):
         """Mode 'env' when SUITEWRIGHT_CACHE_DIR is set."""
         monkeypatch.setenv("SUITEWRIGHT_CACHE_DIR", str(tmp_path / "cache"))
-        monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)
+        monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: None)
         info = paths.describe()
         assert info["mode"] == "env"
         assert info["cache_dir"] == str(tmp_path / "cache")
@@ -149,7 +150,7 @@ class TestDescribe:
         xdg_cache = tmp_path / "xdg_cache"
         monkeypatch.setenv("XDG_CONFIG_HOME", str(xdg_config))
         monkeypatch.setenv("XDG_CACHE_HOME", str(xdg_cache))
-        monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)
+        monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: None)
         info = paths.describe()
         assert info["mode"] == "xdg"
         assert info["root"] == str(xdg_config / "suitewright")
@@ -166,7 +167,7 @@ class TestDescribe:
         dev_root = tmp_path / "project"
         dev_root.mkdir()
         monkeypatch.setenv("SUITEWRIGHT_AUTH_DIR", str(auth_dir))
-        monkeypatch.setattr(paths, "_detect_dev_root", lambda: dev_root)
+        monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: dev_root)
         info = paths.describe()
         assert info["mode"] == "dev"
         assert info["root"] == str(dev_root)
@@ -177,7 +178,7 @@ class TestDescribe:
         """Mode 'dev' when dev root is detected (uses default ../suitewright-auth)."""
         dev_root = tmp_path / "project"
         dev_root.mkdir()
-        monkeypatch.setattr(paths, "_detect_dev_root", lambda: dev_root)
+        monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: dev_root)
         info = paths.describe()
         assert info["mode"] == "dev"
         assert info["root"] == str(dev_root)
@@ -187,7 +188,7 @@ class TestDescribe:
 
     def test_default_mode(self, monkeypatch, tmp_path):
         """Mode 'default' when no env vars set and no dev root detected."""
-        monkeypatch.setattr(paths, "_detect_dev_root", lambda: None)
+        monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: None)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         info = paths.describe()
         assert info["mode"] == "default"

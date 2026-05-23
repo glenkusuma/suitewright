@@ -224,7 +224,7 @@ def _ensure_label(prefix: str) -> tuple[str, str]:
         if label.get("name") == name:
             return label["id"], name
     # CLI has no gmail labels create — use the API directly (test infra only).
-    from suitewright.service import build_service
+    from suitewright._core.service import build_service
 
     svc = build_service("gmail", "v1")
     created = (

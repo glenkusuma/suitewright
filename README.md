@@ -2,6 +2,8 @@
 
 **A portable Google Workspace CLI and workflow toolkit for humans and agents.**
 
+> Early development (pre-0.1.0). Commands and APIs may have breaking changes between minor versions. Pin your version if stability matters.
+
 `suitewright` is a Python command-line tool for working with Google Workspace from a local machine, automation script, or AI agent runtime. It is framework-neutral and built around a cache-first workflow that both humans and agents can inspect.
 
 ## Installation
@@ -45,7 +47,7 @@ suitewright auth login
 suitewright auth check
 ```
 
-For the full auth setup guide (headless flows, Advanced Protection, troubleshooting), see `skills/suitewright-google-workspace/SKILL.md`.
+For the full auth setup guide (headless flows, Advanced Protection, troubleshooting), see the [skill reference](https://github.com/glenkusuma/suitewright/blob/main/skills/suitewright-google-workspace/SKILL.md).
 
 ## Command surface
 
@@ -132,12 +134,12 @@ suitewright is designed around a cache-first pattern: fetch remote state once, i
 
 ## Contributing
 
-See `docs/` for developer documentation:
+See [docs/](https://github.com/glenkusuma/suitewright/tree/main/docs) for developer documentation:
 
-- [docs/development.md](docs/development.md) - dev setup, testing, linting
-- [docs/docker.md](docs/docker.md) - hardened runtime, compose, dev workflow
-- [docs/configuration.md](docs/configuration.md) - auth resolution, env vars
+- [Development](https://github.com/glenkusuma/suitewright/blob/main/docs/development.md) - dev setup, testing, linting
+- [Docker](https://github.com/glenkusuma/suitewright/blob/main/docs/docker.md) - hardened runtime, compose, dev workflow
+- [Configuration](https://github.com/glenkusuma/suitewright/blob/main/docs/configuration.md) - auth resolution, env vars
 
 ## License
 
-Apache-2.0. See `LICENSE` and `NOTICE` for details.
+Apache-2.0. See [LICENSE](https://github.com/glenkusuma/suitewright/blob/main/LICENSE) and [NOTICE](https://github.com/glenkusuma/suitewright/blob/main/NOTICE) for details.

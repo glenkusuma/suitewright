@@ -6,8 +6,6 @@ import json
 import time
 from unittest.mock import patch
 
-import pytest
-
 from suitewright import __version__
 from suitewright._core.update_check import (
     _is_newer,

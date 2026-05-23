@@ -3,8 +3,8 @@
 Resolution precedence (highest first):
 
 1. Explicit override env vars (mode "env"):
-   - SUITEWRIGHT_TOKEN
-   - SUITEWRIGHT_CLIENT_SECRET
+   - SUITEWRIGHT_TOKEN_PATH
+   - SUITEWRIGHT_CLIENT_SECRET_PATH
    - SUITEWRIGHT_CACHE_DIR
    - SUITEWRIGHT_ROOT
 
@@ -107,14 +107,14 @@ def resolve(kind: Kind) -> Path:
     """Resolve a path for the given kind using 4-mode precedence.
 
     Precedence (highest wins):
-    1. env: explicit env var overrides (SUITEWRIGHT_TOKEN, etc.)
+    1. env: explicit env var overrides (SUITEWRIGHT_TOKEN_PATH, etc.)
     2. xdg: $XDG_CONFIG_HOME/suitewright/auth/<file> (only if XDG_CONFIG_HOME is set)
     3. dev: SUITEWRIGHT_AUTH_DIR/<file> (default ../suitewright-auth relative to dev root)
     4. default: $HOME/.config/suitewright/auth/<file>
     """
     if kind == "token":
         # Mode 1: env
-        explicit = os.environ.get("SUITEWRIGHT_TOKEN")
+        explicit = os.environ.get("SUITEWRIGHT_TOKEN_PATH")
         if explicit:
             return Path(explicit).expanduser().resolve()
         root = _explicit_root()
@@ -135,7 +135,7 @@ def resolve(kind: Kind) -> Path:
 
     if kind == "client_secret":
         # Mode 1: env
-        explicit = os.environ.get("SUITEWRIGHT_CLIENT_SECRET")
+        explicit = os.environ.get("SUITEWRIGHT_CLIENT_SECRET_PATH")
         if explicit:
             return Path(explicit).expanduser().resolve()
         root = _explicit_root()
@@ -203,7 +203,7 @@ def describe() -> dict:
     """
     if os.environ.get("SUITEWRIGHT_ROOT") or any(
         os.environ.get(var)
-        for var in ("SUITEWRIGHT_TOKEN", "SUITEWRIGHT_CLIENT_SECRET", "SUITEWRIGHT_CACHE_DIR")
+        for var in ("SUITEWRIGHT_TOKEN_PATH", "SUITEWRIGHT_CLIENT_SECRET_PATH", "SUITEWRIGHT_CACHE_DIR")
     ):
         mode = "env"
     elif _has_explicit_xdg():

@@ -94,7 +94,7 @@ def _populate_auth_dir(auth_dir: Path) -> None:
 
 
 def scenario_env(installed: bool) -> dict:
-    """Scenario: env mode — explicit SUITEWRIGHT_TOKEN + SUITEWRIGHT_CLIENT_SECRET."""
+    """Scenario: env mode — explicit SUITEWRIGHT_TOKEN_PATH + SUITEWRIGHT_CLIENT_SECRET_PATH."""
     with tempfile.TemporaryDirectory(prefix="sw-verify-env-") as tmpdir:
         tmp = Path(tmpdir)
         token_path = tmp / "token.json"
@@ -103,8 +103,8 @@ def scenario_env(installed: bool) -> dict:
         secret_path.write_text(DUMMY_CLIENT_SECRET)
 
         env = _clean_env()
-        env["SUITEWRIGHT_TOKEN"] = str(token_path)
-        env["SUITEWRIGHT_CLIENT_SECRET"] = str(secret_path)
+        env["SUITEWRIGHT_TOKEN_PATH"] = str(token_path)
+        env["SUITEWRIGHT_CLIENT_SECRET_PATH"] = str(secret_path)
         # Use a non-project cwd to avoid dev-root detection
         env["HOME"] = str(tmp)
         if platform.system() == "Windows":

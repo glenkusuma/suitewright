@@ -2,20 +2,7 @@
 
 **A portable Google Workspace CLI and workflow toolkit for humans and agents.**
 
-`suitewright` is a Python command-line tool for working with Google Workspace from a local machine, automation script, or AI agent runtime. It is framework-neutral and built around a file-and-cache-first workflow that both humans and agents can inspect.
-
-> Status: early standalone project (`v0.0.1-rc`). Commands and conventions may change.
-
-## Why suitewright
-
-Most Google Workspace tools are either thin API wrappers, one-off scripts, or integrations tied to a specific agent framework. `suitewright` is designed to be:
-
-- **Portable** - works with `uv`, `pip`, a local `.venv`, or plain `python3`.
-- **Agent-friendly** - useful to any agent that can run Python and read or write files.
-- **Human-friendly** - usable as a normal CLI for everyday Workspace tasks.
-- **Cache-first** - encourages safe local inspection before mutation. Implemented for both Forms and Docs.
-- **Multi-service** - covers Gmail, Calendar, Drive, Docs, Sheets, Contacts, and Forms.
-- **Auth-aware** - treats OAuth setup and local credentials as first-class parts of the workflow.
+`suitewright` is a Python command-line tool for working with Google Workspace from a local machine, automation script, or AI agent runtime. It is framework-neutral and built around a cache-first workflow that both humans and agents can inspect.
 
 ## Installation
 
@@ -31,7 +18,7 @@ With `pip`:
 python3 -m pip install suitewright
 ```
 
-From a checkout (development mode):
+From a checkout:
 
 ```bash
 git clone https://github.com/glenkusuma/suitewright.git
@@ -50,9 +37,7 @@ npx skills add glenkusuma/suitewright
 
 ## Authentication
 
-`suitewright` uses local OAuth credentials on the machine where it runs.
-
-Provide your Google OAuth client secret, complete browser-based consent once, and `suitewright` stores the resulting token locally. Run `suitewright auth check` at any point to see which path resolution mode is active and where files are being read from.
+`suitewright` uses local OAuth credentials. Provide your Google OAuth client secret, complete browser-based consent once, and the resulting token is stored locally.
 
 ```bash
 suitewright auth init --client-secret /path/to/client_secret.json
@@ -60,34 +45,7 @@ suitewright auth login
 suitewright auth check
 ```
 
-For headless or agent-driven flows, `auth login` accepts `--auth-url` and `--auth-code` as orthogonal flags so the consent step can be split across machines.
-
-## Configuration paths
-
-Auth file resolution follows a 4-mode precedence (highest wins):
-
-| Priority | Mode | Source |
-|----------|------|--------|
-| 1 | `env` | `SUITEWRIGHT_TOKEN` / `SUITEWRIGHT_CLIENT_SECRET` env vars |
-| 2 | `xdg` | `$XDG_CONFIG_HOME/suitewright/auth/` |
-| 3 | `dev` | `SUITEWRIGHT_AUTH_DIR` (default `../suitewright-auth` relative to repo root) |
-| 4 | `default` | `$HOME/.config/suitewright/auth/` |
-
-Run `suitewright auth check --json` to see which mode is active. The output includes a `"mode"` field with one of: `"env"`, `"xdg"`, `"dev"`, `"default"`.
-
-Cache resolution:
-
-- `SUITEWRIGHT_CACHE_DIR` env var (if set)
-- `$XDG_CACHE_HOME/suitewright/` (default `~/.cache/suitewright/`)
-
-### Dev mode and `SUITEWRIGHT_AUTH_DIR`
-
-In development, auth files are read from `SUITEWRIGHT_AUTH_DIR`. This defaults to `../suitewright-auth` relative to the detected repo root.
-
-```bash
-export SUITEWRIGHT_AUTH_DIR=/path/to/suitewright-auth
-suitewright auth check --json  # confirms mode: "dev"
-```
+For the full auth setup guide (headless flows, Advanced Protection, troubleshooting), see `skills/suitewright-google-workspace/SKILL.md`.
 
 ## Command surface
 
@@ -114,32 +72,45 @@ suitewright forms         list | get | create | update
 
 Run any subcommand with `--help` for full flags.
 
-### Examples
+## Examples
 
-Inspect a Doc safely before editing:
-
-```bash
-suitewright docs query structure DOC_ID --full-text
-```
-
-Validate a `batchUpdate` payload without mutating:
+### Gmail
 
 ```bash
-suitewright docs mutate raw DOC_ID --dry-run --requests-file edits.json
+suitewright gmail search "is:unread" --max 10
+suitewright gmail get MESSAGE_ID
+suitewright gmail send --to user@example.com --subject "Hello" --body "Message text"
 ```
 
-Docs cache-first workflow:
+### Calendar
+
+```bash
+suitewright calendar list --calendar primary
+suitewright calendar create --calendar primary --summary "Standup" \
+  --start 2026-03-01T10:00:00-06:00 --end 2026-03-01T10:30:00-06:00
+```
+
+### Drive
+
+```bash
+suitewright drive search "quarterly report" --max 10
+suitewright drive upload report.pdf --parent FOLDER_ID
+suitewright drive delete FILE_ID                # moves to trash
+suitewright drive delete FILE_ID --permanent    # irreversible
+```
+
+### Docs - cache-first workflow
 
 ```bash
 suitewright docs cache fetch DOC_ID
-suitewright docs query structure DOC_ID
+suitewright docs query structure DOC_ID --full-text
 suitewright docs query find-text DOC_ID --pattern "typo"
 suitewright docs mutate replace-all DOC_ID --find "typo" --replace "fixed" --dry-run
 suitewright docs mutate replace-all DOC_ID --find "typo" --replace "fixed"
 suitewright docs cache validate DOC_ID
 ```
 
-Cache-first Forms workflow:
+### Forms - cache-first workflow
 
 ```bash
 suitewright forms fetch FORM_ID
@@ -147,154 +118,25 @@ suitewright forms query locate FORM_ID --title "Question 1"
 suitewright forms cache-update FORM_ID /path/to/changes.json
 ```
 
-Drive round-trip with safer-by-default delete:
+### Sheets
 
 ```bash
-suitewright drive upload report.pdf --parent FOLDER_ID
-suitewright drive get FILE_ID
-suitewright drive delete FILE_ID                # moves to trash
-suitewright drive delete FILE_ID --permanent    # explicit irreversible delete
+suitewright sheets get SHEET_ID "Sheet1!A1:D10"
+suitewright sheets update SHEET_ID "Sheet1!A1:B2" --values '[["Name","Score"],["Alice","95"]]'
+suitewright sheets append SHEET_ID "Sheet1!A:C" --values '[["new","row","data"]]'
 ```
 
-## Cache-first workflow philosophy
+## Cache-first philosophy
 
-suitewright is designed around a cache-first pattern: fetch remote state once,
-inspect and plan locally, then apply a guarded mutation and refresh.
+suitewright is designed around a cache-first pattern: fetch remote state once, inspect and plan locally, then apply a guarded mutation and refresh. This pattern is implemented for both Forms (`forms fetch` -> `forms query` -> `forms cache-update`) and Docs (`docs cache fetch` -> `docs query` -> `docs mutate` -> `docs cache validate`). Local artifacts can be opened in an editor, read by an agent, committed to a branch, diffed, or fed into a repeatable script.
 
-```text
-fetch live state
-       ↓
-write local cache artifact
-       ↓
-inspect / read / diff / patch locally
-       ↓
-compute safe edit plan
-       ↓
-apply guarded remote update
-       ↓
-refresh local cache
-```
+## Contributing
 
-This pattern is currently implemented for **Forms** (`forms fetch` -> `forms query` -> `forms cache-update`)
-and **Docs** (`docs cache fetch` -> `docs query` -> `docs mutate` -> `docs cache validate`).
+See `docs/` for developer documentation:
 
-Local artifacts can be opened in an editor, read by an agent, committed to a branch, diffed, validated, patched, or fed into a repeatable script.
-
-## Agent-friendly conventions
-
-- JSON output is the default for inspection commands so it's easy to pipe into `jq` or feed into another tool.
-- Mutation commands separate planning from applying. `docs mutate raw --dry-run` validates request shape; `docs plan` produces an inspectable plan artifact.
-- Auth and config paths are explicit and discoverable via `auth check`.
-- No hidden global state; everything resolves through `paths.resolve()` precedence.
-
-## Development
-
-```bash
-git clone https://github.com/glenkusuma/suitewright.git
-cd suitewright
-uv sync
-uv run suitewright --help
-uv build
-```
-
-## Running Tests
-
-Install dev dependencies and run the unit test suite (live tests are excluded by default):
-
-```bash
-uv sync
-uv run pytest
-```
-
-Test layout:
-
-```
-tests/
-├── unit/          # pure-function tests
-├── integration/   # mocked-service full-path tests
-├── scripts/       # helper script tests (scripts/docker.py)
-└── live/          # real API tests (opt-in)
-```
-
-With coverage:
-
-```bash
-uv run pytest --cov=suitewright
-```
-
-### Live tests
-
-Live tests hit real Google APIs and require valid credentials. They are opt-in:
-
-```bash
-uv run pytest -m live --run-live
-```
-
-Markers available:
-
-| Marker | Description |
-|--------|-------------|
-| `live` | Requires a real Google account; opt-in via `--run-live` |
-| `smoke` | Read-only sanity checks against live APIs |
-| `mutate` | Creates or modifies real resources (sandboxed) |
-| `destructive` | Sends, deletes, or otherwise acts irreversibly (sandboxed) |
-
-### Linting and type checking
-
-```bash
-uv run ruff check .
-uv run mypy
-uv run bandit -r src/suitewright
-```
-
-## Docker
-
-A hardened Docker image is available for running suitewright in production or CI environments.
-
-### Hardened runtime
-
-Run with a read-only filesystem, all capabilities dropped, and explicit tmpfs mounts:
-
-```bash
-docker run --rm \
-  --read-only \
-  --cap-drop=ALL \
-  --security-opt=no-new-privileges \
-  --tmpfs /home/suitewright/.cache/suitewright:uid=1000,gid=1000,mode=700 \
-  --tmpfs /home/suitewright/runtime:uid=1000,gid=1000,mode=700 \
-  --tmpfs /tmp:uid=1000,gid=1000,mode=700 \
-  -v "${SUITEWRIGHT_AUTH_DIR}":/home/suitewright/.config/suitewright/auth:ro \
-  suitewright:local --help
-```
-
-### Auth mount
-
-Auth files are mounted into the `auth/` subdir only - never over the entire config directory. This limits the container's read access to credentials only:
-
-```bash
--v /path/to/suitewright-auth:/home/suitewright/.config/suitewright/auth:ro
-```
-
-The source path is controlled by `SUITEWRIGHT_AUTH_DIR`. The mount is read-only (`:ro`).
-
-### docker-compose
-
-The included `docker-compose.yml` configures both the runtime and test services with the same hardening. Auth is sourced from `SUITEWRIGHT_AUTH_DIR`:
-
-```bash
-SUITEWRIGHT_AUTH_DIR=/path/to/suitewright-auth docker compose up suitewright
-```
-
-### Dev workflow script
-
-A contributor-friendly wrapper script handles building the test image and running tests in Docker:
-
-```bash
-uv run python scripts/docker.py build              # build test image
-uv run python scripts/docker.py test               # run unit/integration tests
-uv run python scripts/docker.py test --live        # run live API tests (with preflight checks)
-uv run python scripts/docker.py test -k test_auth  # forward args to pytest
-```
+- [docs/development.md](docs/development.md) - dev setup, testing, linting
+- [docs/docker.md](docs/docker.md) - hardened runtime, compose, dev workflow
+- [docs/configuration.md](docs/configuration.md) - auth resolution, env vars
 
 ## License
 

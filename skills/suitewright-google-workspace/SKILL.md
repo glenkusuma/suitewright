@@ -5,12 +5,14 @@ license: Apache-2.0
 compatibility: "Requires Python 3.11+. Google OAuth2 credentials required (see auth setup). Works on Linux, macOS, and Windows."
 metadata:
   author: glenkusuma
-  version: "1.0.0"
+  version: "0.0.2"
   tags: [Google, Gmail, Calendar, Drive, Sheets, Docs, Contacts, Forms, OAuth]
   homepage: https://github.com/glenkusuma/suitewright
 ---
 
 # suitewright Google Workspace
+
+> Early development (pre-0.1.0). Commands and APIs may have breaking changes between minor versions. Pin your version if stability matters.
 
 Gmail, Calendar, Drive, Contacts, Sheets, Docs, and Forms - through local OAuth and the `suitewright` CLI.
 
@@ -24,8 +26,6 @@ When installed as a package, auth files live in `~/.config/suitewright/auth/` by
 ## References
 
 - `references/gmail-search-syntax.md` - Gmail search operators (is:unread, from:, newer_than:, etc.)
-- `references/forms-auth.md` - Forms scopes and reauth note for Google Forms workflows
-- `references/python-client-source.md` - Python package provenance and install instructions
 - `references/docs-request-template-styling.md` - reusable styling guidance for `docs request-template style-range`
 
 ## First-Time Setup
@@ -231,10 +231,41 @@ suitewright sheets append SHEET_ID "Sheet1!A:C" --values '[["new","row","data"]]
 ### Docs
 
 ```bash
-# Read
-suitewright docs get DOC_ID
-suitewright docs show-structure DOC_ID
-suitewright docs show-structure DOC_ID --full-text
+# Cache lifecycle
+suitewright docs cache fetch DOC_ID
+suitewright docs cache show DOC_ID
+suitewright docs cache validate DOC_ID
+suitewright docs cache update DOC_ID /path/to/requests.json
+
+# Query (operates on local cache - no API calls)
+suitewright docs query structure DOC_ID
+suitewright docs query structure DOC_ID --full-text
+suitewright docs query get DOC_ID
+suitewright docs query list-headings DOC_ID
+suitewright docs query find-heading DOC_ID --text "Introduction"
+suitewright docs query section DOC_ID --heading "Introduction"
+suitewright docs query find-text DOC_ID --pattern "regex"
+suitewright docs query get-range DOC_ID --start 1 --end 50
+suitewright docs query word-count DOC_ID
+suitewright docs query find-citations DOC_ID
+suitewright docs query check-headings DOC_ID
+
+# Mutate
+suitewright docs mutate append DOC_ID --text "Additional content to append"
+suitewright docs mutate replace DOC_ID --text "Fresh replacement body"
+suitewright docs mutate replace-all DOC_ID --find "old text" --replace "new text"
+suitewright docs mutate insert-table DOC_ID --rows 3 --cols 4 --index 1
+suitewright docs mutate insert-image DOC_ID --uri https://example.com/image.png --index 1
+suitewright docs mutate style-range DOC_ID --start-index 1 --end-index 10 --bold
+suitewright docs mutate table-update-cell DOC_ID --table 0 --row 1 --col 2 --text "Updated"
+suitewright docs mutate table-append-row DOC_ID --table 0 --values '["A","B","C"]'
+suitewright docs mutate raw DOC_ID --requests '[{"insertText":{"location":{"index":1},"text":"Hello"}}]'
+suitewright docs mutate raw DOC_ID --requests-file /path/to/requests.json
+suitewright docs mutate raw DOC_ID --dry-run --requests '[{"insertText":{"location":{"index":1},"text":"Hello"}}]'
+
+# Table read
+suitewright docs table get DOC_ID
+suitewright docs table get DOC_ID --table 0
 
 # Generate starter Docs request payloads
 suitewright docs request-template replace-all
@@ -246,29 +277,6 @@ suitewright docs request-template style-range
 suitewright docs create --title "Meeting Notes"
 suitewright docs create --title "Draft" --body "First paragraph..."
 
-# Append text to the end of an existing Doc
-suitewright docs append DOC_ID --text "Additional content to append"
-
-# Replace the full document body
-suitewright docs replace DOC_ID --text "Fresh replacement body"
-
-# Apply raw Docs API batchUpdate requests
-suitewright docs update DOC_ID --requests '[{"insertText":{"location":{"index":1},"text":"Hello"}}]'
-suitewright docs update DOC_ID --requests-file /path/to/requests.json
-suitewright docs update DOC_ID --dry-run --requests '[{"insertText":{"location":{"index":1},"text":"Hello"}}]'
-
-# Semantic helpers
-suitewright docs replace-all DOC_ID --find "old text" --replace "new text"
-suitewright docs insert-table DOC_ID --rows 3 --cols 4 --index 1
-suitewright docs insert-image DOC_ID --uri https://example.com/image.png --index 1
-suitewright docs style-range DOC_ID --start-index 1 --end-index 10 --bold
-
-# Table helpers
-suitewright docs table-get DOC_ID
-suitewright docs table-get DOC_ID --table 0
-suitewright docs table-update-cell DOC_ID --table 0 --row 1 --col 2 --text "Updated"
-suitewright docs table-append-row DOC_ID --table 0 --values '["A","B","C"]'
-
 # Comments
 suitewright docs comments list DOC_ID
 suitewright docs comments get DOC_ID COMMENT_ID
@@ -277,6 +285,19 @@ suitewright docs comments reply DOC_ID COMMENT_ID --text "Reply text"
 # Plan (inspect without mutating)
 suitewright docs plan DOC_ID --requests-file /path/to/requests.json
 ```
+
+Docs cache-first workflow pattern:
+
+```
+suitewright docs cache fetch DOC_ID       # pull live state into local cache
+suitewright docs cache validate DOC_ID    # confirm cache is fresh
+suitewright docs query structure DOC_ID   # inspect structure locally
+suitewright docs mutate append DOC_ID     # apply guarded mutation + auto-refresh
+```
+
+When the doc has already been fetched, prefer local queries over repeated live
+API calls. Use `docs query` subcommands to inspect structure, find text, or
+extract sections before preparing mutation requests.
 
 ### Forms
 
@@ -348,11 +369,16 @@ Most success paths return JSON. Some auth and error paths print plain text or st
 - **Contacts list**: `[{name, emails: [...], phones: [...]}]`
 - **Sheets get**: `[[cell, cell, ...], ...]`
 - **Docs create**: `{status: "created", documentId, title, url}`
-- **Docs append**: `{status: "appended", documentId, inserted_at, characters}`
-- **Docs replace**: `{status: "replaced", documentId, characters}`
+- **Docs query get**: plain text (document content as text, not JSON)
+- **Docs query structure**: `{documentId, title, blockCount, blocks}`
+- **Docs mutate append**: `{status: "appended", documentId, inserted_at, characters}`
+- **Docs mutate replace**: `{status: "replaced", documentId, characters}`
+- **Docs mutate replace-all**: `{status: "replaced", documentId, find, replace, matchCase, occurrencesChanged}`
+- **Docs mutate raw**: raw Docs API `batchUpdate` response JSON
+- **Docs mutate raw --dry-run**: `{status: "dry-run", requestCount, requests}`
+- **Docs cache fetch**: `{status: "cached", documentId, title, cachePath, revisionId}`
+- **Docs cache validate**: `{status: "ok", documentId, cachePath, cacheHash, revisionId}`
 - **Docs request-template**: JSON list of starter Docs API requests
-- **Docs show-structure**: `{documentId, title, summary, blocks}`
-- **Docs update**: raw Docs API `batchUpdate` response JSON, or `{documentId, dryRun, requestCount, requestKinds, requests}` when `--dry-run` is used
 
 ## Rules
 
@@ -361,7 +387,7 @@ Most success paths return JSON. Some auth and error paths print plain text or st
 3. **Use the Gmail search syntax reference** for complex queries - load `references/gmail-search-syntax.md`.
 4. **Calendar times must include timezone** - always use ISO 8601 with offset (e.g., `2026-03-01T10:00:00-06:00`) or UTC (`Z`).
 5. **Respect rate limits** - avoid rapid-fire sequential API calls. Batch reads when possible.
-6. **Inspect before mutate** - use `docs show-structure` and `forms validate` before write operations.
+6. **Inspect before mutate** - use `docs query structure` and `docs cache validate` before write operations. Use `forms validate` before Forms updates.
 
 ## Troubleshooting
 

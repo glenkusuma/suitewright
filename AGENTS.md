@@ -116,6 +116,7 @@ rg "client_secret|ya29\.|\"token\"\s*:" tests/ src/ --glob "*.py" | grep -v "pat
 ### 3. _local/ drift check
 
 `_local/` is gitignored and never committed, but stale guides mislead future agents.
+
 ### 4. Documentation consistency
 
 ```bash
@@ -128,6 +129,12 @@ test -f skills/suitewright-google-workspace/SKILL.md && echo OK
 # .env.example has no real values (all optional fields blank or default)
 grep -E "^[A-Z_]+=.+" .env.example | grep -v "primary\|suitewright-live-test\|\./auth/"
 # expected: no output (no filled-in secrets)
+
+# Version consistency: pyproject.toml, __init__.py, and SKILL.md must match
+grep 'version = ' pyproject.toml | head -1
+grep '__version__' src/suitewright/__init__.py
+grep 'version:' skills/suitewright-google-workspace/SKILL.md
+# expected: all three show the same version string
 ```
 
 ### 5. Test suite

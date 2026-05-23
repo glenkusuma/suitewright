@@ -13,7 +13,7 @@ Most Google Workspace tools are either thin API wrappers, one-off scripts, or in
 - **Portable** - works with `uv`, `pip`, a local `.venv`, or plain `python3`.
 - **Agent-friendly** - useful to any agent that can run Python and read or write files.
 - **Human-friendly** - usable as a normal CLI for everyday Workspace tasks.
-- **Cache-first** - encourages safe local inspection before mutation. Currently implemented for Forms; Docs cache-first support is planned.
+- **Cache-first** - encourages safe local inspection before mutation. Implemented for both Forms and Docs.
 - **Multi-service** - covers Gmail, Calendar, Drive, Docs, Sheets, Contacts, and Forms.
 - **Auth-aware** - treats OAuth setup and local credentials as first-class parts of the workflow.
 
@@ -98,12 +98,14 @@ suitewright calendar      list | create | delete
 suitewright drive         search | get | upload | download | create-folder | share | delete
 suitewright contacts      list
 suitewright sheets        get | update | append
-suitewright docs          get | show-structure | create | append | replace | update
-                          request-template <kind>
-                          replace-all | insert-table | insert-image | style-range
-                          comments list | comments get | comments reply
-                          table-get | table-update-cell | table-append-row
-                          plan
+suitewright docs          cache fetch | show | validate | update
+                          query structure | get | list-headings | find-heading | section
+                                find-text | get-range | word-count | find-citations | check-headings
+                          mutate append | replace | replace-all | insert-table | insert-image
+                                 style-range | table-update-cell | table-append-row | raw
+                          table get
+                          plan | request-template <kind> | comments list | get | reply | resolve
+                          create
 suitewright forms         list | get | create | update
                           fetch | show-cache | validate | cache-update
                           query locate | query after | query delete-request
@@ -117,13 +119,24 @@ Run any subcommand with `--help` for full flags.
 Inspect a Doc safely before editing:
 
 ```bash
-suitewright docs show-structure DOC_ID --full-text
+suitewright docs query structure DOC_ID --full-text
 ```
 
 Validate a `batchUpdate` payload without mutating:
 
 ```bash
-suitewright docs update DOC_ID --dry-run --requests-file edits.json
+suitewright docs mutate raw DOC_ID --dry-run --requests-file edits.json
+```
+
+Docs cache-first workflow:
+
+```bash
+suitewright docs cache fetch DOC_ID
+suitewright docs query structure DOC_ID
+suitewright docs query find-text DOC_ID --pattern "typo"
+suitewright docs mutate replace-all DOC_ID --find "typo" --replace "fixed" --dry-run
+suitewright docs mutate replace-all DOC_ID --find "typo" --replace "fixed"
+suitewright docs cache validate DOC_ID
 ```
 
 Cache-first Forms workflow:
@@ -162,15 +175,15 @@ apply guarded remote update
 refresh local cache
 ```
 
-This pattern is currently implemented for **Forms** (`forms fetch` -> `forms query` -> `forms cache-update`).
-Docs cache-first support is planned for a future release.
+This pattern is currently implemented for **Forms** (`forms fetch` -> `forms query` -> `forms cache-update`)
+and **Docs** (`docs cache fetch` -> `docs query` -> `docs mutate` -> `docs cache validate`).
 
 Local artifacts can be opened in an editor, read by an agent, committed to a branch, diffed, validated, patched, or fed into a repeatable script.
 
 ## Agent-friendly conventions
 
 - JSON output is the default for inspection commands so it's easy to pipe into `jq` or feed into another tool.
-- Mutation commands separate planning from applying. `docs update --dry-run` validates request shape; `docs plan` produces an inspectable plan artifact.
+- Mutation commands separate planning from applying. `docs mutate raw --dry-run` validates request shape; `docs plan` produces an inspectable plan artifact.
 - Auth and config paths are explicit and discoverable via `auth check`.
 - No hidden global state; everything resolves through `paths.resolve()` precedence.
 

@@ -5,11 +5,12 @@
 - For agent usage guide, command reference, and OAuth setup: read `skills/suitewright-google-workspace/SKILL.md`.
 - NEVER USE `—` or `–` in prose. Use `-`.
 - NEVER USE `→` instead use `->`.
+
 ## Hard rules
 
-### No credentials in `auth/` at repo root
+### No credentials at repo root
 
-Auth credentials are resolved via the `SUITEWRIGHT_AUTH_DIR` environment variable (default: `../suitewright-auth` relative to the detected dev root). The `_detect_dev_root()` function in `src/suitewright/paths.py` does not use a repo-root `auth/` directory as a dev-root signal.
+Auth credentials are resolved via the `SUITEWRIGHT_AUTH_DIR` environment variable (default: `../suitewright-auth` relative to the detected dev root). The `_detect_dev_root()` function in `src/suitewright/_core/paths.py`.
 
 - DO NOT READ OR COMMIT credential files (`google_token.json`, `google_client_secret.json`) to the repo. They are gitignored via explicit entries in `.gitignore`.
 - Dev-mode auth files live outside the repo at the path specified by `SUITEWRIGHT_AUTH_DIR`.
@@ -56,7 +57,7 @@ uv build                      # build wheel + sdist
 
 ## Testing
 
-- Mock `build_service` at the module level where it is imported, not at `suitewright.service.build_service`.
+- Mock `build_service` at the module level where it is imported, not at `suitewright._core.service.build_service`.
   Example: `patch("suitewright.gmail.build_service", return_value=svc)`
 - Use `MagicMock()` for service objects; chain `.method().execute.return_value = ...` to set responses.
 - Do not hit real Google APIs in tests.
@@ -77,9 +78,9 @@ tests/
 ## Mutation safety
 
 - Confirm with the user before any write operation (send email, create/delete events, modify Docs/Sheets/Forms).
-- Inspect before mutate: use `docs show-structure` before Docs edits, `forms validate` before Forms updates.
+- Inspect before mutate: use `docs query structure` before Docs edits, `forms validate` before Forms updates.
 - `drive delete` moves to trash by default - `--permanent` is explicit and irreversible.
-- `docs update --dry-run` validates request shape without mutating.
+- `docs mutate raw --dry-run` validates request shape without mutating.
 
 ## Pre-commit checklist
 
@@ -114,21 +115,7 @@ rg "client_secret|ya29\.|\"token\"\s*:" tests/ src/ --glob "*.py" | grep -v "pat
 
 ### 3. _local/ drift check
 
-`_local/` is gitignored and never committed, but stale guides mislead future agents. Before committing, verify:
-
-```bash
-# Skill path is correct (canonical skill is at repo root, not _local/)
-rg "_local/skills/" _local/ 2>/dev/null
-
-# .env references point to repo root, not tests/live/
-rg "tests/live/\.env" _local/ 2>/dev/null
-
-# bootstrap/check_leaks references use .py not .sh
-rg "bootstrap\.sh|check_leaks\.sh" _local/ 2>/dev/null
-```
-
-If any of these return output, update the relevant `_local/` files before committing.
-
+`_local/` is gitignored and never committed, but stale guides mislead future agents.
 ### 4. Documentation consistency
 
 ```bash

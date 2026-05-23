@@ -44,6 +44,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    from suitewright._core.update_check import check_for_update
+
+    check_for_update(__version__)
+
     if hasattr(args, "func"):
         args.func(args)
         return 0

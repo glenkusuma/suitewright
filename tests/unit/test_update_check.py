@@ -44,20 +44,28 @@ class TestCache:
         monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
         cache_file = tmp_path / "suitewright" / "update-check.json"
         cache_file.parent.mkdir(parents=True)
-        cache_file.write_text(json.dumps({
-            "latest": "1.0.0",
-            "checked_at": time.time() - 90000,
-        }))
+        cache_file.write_text(
+            json.dumps(
+                {
+                    "latest": "1.0.0",
+                    "checked_at": time.time() - 90000,
+                }
+            )
+        )
         assert _read_cache() is None
 
     def test_fresh_cache_returns_data(self, tmp_path, monkeypatch):
         monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
         cache_file = tmp_path / "suitewright" / "update-check.json"
         cache_file.parent.mkdir(parents=True)
-        cache_file.write_text(json.dumps({
-            "latest": "2.0.0",
-            "checked_at": time.time() - 100,
-        }))
+        cache_file.write_text(
+            json.dumps(
+                {
+                    "latest": "2.0.0",
+                    "checked_at": time.time() - 100,
+                }
+            )
+        )
         cached = _read_cache()
         assert cached["latest"] == "2.0.0"
 
@@ -71,9 +79,7 @@ class TestCheckForUpdate:
         monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
         monkeypatch.delenv("SUITEWRIGHT_NO_UPDATE_CHECK", raising=False)
 
-        with patch(
-            "suitewright._core.update_check._fetch_latest", return_value="9.9.9"
-        ):
+        with patch("suitewright._core.update_check._fetch_latest", return_value="9.9.9"):
             check_for_update(__version__)
 
         captured = capsys.readouterr()
@@ -85,9 +91,7 @@ class TestCheckForUpdate:
         monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
         monkeypatch.delenv("SUITEWRIGHT_NO_UPDATE_CHECK", raising=False)
 
-        with patch(
-            "suitewright._core.update_check._fetch_latest", return_value=__version__
-        ):
+        with patch("suitewright._core.update_check._fetch_latest", return_value=__version__):
             check_for_update(__version__)
 
         captured = capsys.readouterr()
@@ -97,9 +101,7 @@ class TestCheckForUpdate:
         monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
         monkeypatch.delenv("SUITEWRIGHT_NO_UPDATE_CHECK", raising=False)
 
-        with patch(
-            "suitewright._core.update_check._fetch_latest", return_value=None
-        ):
+        with patch("suitewright._core.update_check._fetch_latest", return_value=None):
             check_for_update(__version__)
 
         captured = capsys.readouterr()
@@ -125,14 +127,16 @@ class TestCheckForUpdate:
         # Pre-populate cache with a newer version
         cache_file = tmp_path / "suitewright" / "update-check.json"
         cache_file.parent.mkdir(parents=True)
-        cache_file.write_text(json.dumps({
-            "latest": "5.0.0",
-            "checked_at": time.time(),
-        }))
+        cache_file.write_text(
+            json.dumps(
+                {
+                    "latest": "5.0.0",
+                    "checked_at": time.time(),
+                }
+            )
+        )
 
-        with patch(
-            "suitewright._core.update_check._fetch_latest"
-        ) as mock_fetch:
+        with patch("suitewright._core.update_check._fetch_latest") as mock_fetch:
             check_for_update(__version__)
 
         # Should not have called fetch (used cache)

@@ -206,9 +206,7 @@ def describe() -> dict:
         "SUITEWRIGHT_CLIENT_SECRET_PATH",
         "SUITEWRIGHT_CACHE_DIR",
     )
-    if os.environ.get("SUITEWRIGHT_ROOT") or any(
-        os.environ.get(var) for var in env_vars
-    ):
+    if os.environ.get("SUITEWRIGHT_ROOT") or any(os.environ.get(var) for var in env_vars):
         mode = "env"
     elif _has_explicit_xdg():
         mode = "xdg"

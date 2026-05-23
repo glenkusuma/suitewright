@@ -1,11 +1,45 @@
-# Python build / venv
-.venv/
+# Editor / OS artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.egg-info/
-dist/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
 build/
+dist/
+*.egg-info/
+*.egg
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
 .coverage
+.coverage.*
+.pytest_cache/
+*.lcov
+
+# mypy / pytype / pyre
+.mypy_cache/
+.dmypy.json
+.pytype/
+.pyre/
+
+# Ruff
+.ruff_cache/
 
 # Local cache snapshots (dev mode only)
 cache/*
@@ -14,18 +48,36 @@ cache/*
 # Disposable scratch artifacts
 _local/
 
-# Agent harness files
+# Agent harness config (each contributor configures locally)
 .claude/
-CLAUDE.md
+.cursor/
 .kiro/
+.hermes/
 .opencode/
+.copilot/
+.windsurf/
+.aider/
+CLAUDE.md
+.roomodes
 
 # Session / ephemeral artifacts
 *.session.json
 *.session.md
 
-# Local env (any level)
-.env
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+
+# Secrets and credentials
+*.env
+.env.*
+!.env.example
+*.key
+*.pem
+token.json
+client_secret*.json
+credentials.json
 
 # Auth credentials (never commit real secrets, any level)
 google_token.json

@@ -8,7 +8,7 @@ import json
 import mimetypes
 from pathlib import Path
 
-from suitewright.service import build_service
+from suitewright._core.service import build_service
 
 VALID_SHARE_ROLES = {"reader", "commenter", "writer"}
 

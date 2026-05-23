@@ -5,11 +5,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import time
 from pathlib import Path
 
+from suitewright._core.retry import execute_with_backoff
+from suitewright._core.service import build_service
 from suitewright.forms.cache import cache_path, ensure_cache_root
-from suitewright.service import build_service
 
 
 def cache_payload(form_id: str) -> dict:
@@ -28,7 +28,7 @@ def cache_hash(form_id: str) -> str:
 
 def fetch_form(form_id: str) -> dict:
     service = build_service("forms", "v1")
-    return _execute_with_backoff(lambda: service.forms().get(formId=form_id).execute())
+    return execute_with_backoff(lambda: service.forms().get(formId=form_id).execute())
 
 
 def write_cache(form_id: str, payload: dict) -> Path:
@@ -52,32 +52,6 @@ def _minimal_print(payload: dict, *, verbose: bool) -> None:
                 ensure_ascii=False,
             )
         )
-
-
-def _execute_with_backoff(func, *, retries: int = 4, base_delay: float = 1.5):
-    try:
-        from googleapiclient.errors import HttpError  # type: ignore
-    except Exception:
-        HttpError = None  # type: ignore
-
-    last_error = None
-    for attempt in range(retries + 1):
-        try:
-            return func()
-        except Exception as exc:
-            last_error = exc
-            if HttpError is not None and isinstance(exc, HttpError):
-                status = getattr(getattr(exc, "resp", None), "status", None)
-                if status not in {429, 500, 502, 503, 504} or attempt == retries:
-                    raise
-                time.sleep(base_delay * (2**attempt))
-                continue
-            time.sleep(base_delay * (2**attempt))
-            if attempt == retries:
-                raise
-    if last_error is not None:
-        raise last_error
-    raise RuntimeError("Backoff loop exited without result or captured error")
 
 
 def cmd_fetch(args):
@@ -216,7 +190,7 @@ def cmd_update(args):
     payload = {"requests": requests}
     if args.include_form_in_response:
         payload["includeFormInResponse"] = True
-    result = _execute_with_backoff(
+    result = execute_with_backoff(
         lambda: service.forms().batchUpdate(formId=args.form_id, body=payload).execute()
     )
 

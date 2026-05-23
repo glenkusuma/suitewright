@@ -6,7 +6,7 @@ import argparse
 import json
 from datetime import UTC, datetime, timedelta
 
-from suitewright.service import build_service
+from suitewright._core.service import build_service
 
 
 def cmd_list(args):

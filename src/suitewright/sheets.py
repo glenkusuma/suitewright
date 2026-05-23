@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 
-from suitewright.service import build_service
+from suitewright._core.service import build_service
 
 
 def cmd_get(args):

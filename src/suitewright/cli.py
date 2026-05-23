@@ -10,7 +10,8 @@ from __future__ import annotations
 import argparse
 import sys
 
-from suitewright import __version__, auth, calendar, contacts, drive, gmail, sheets
+from suitewright import __version__, calendar, contacts, drive, gmail, sheets
+from suitewright._core import auth
 from suitewright.docs import register as register_docs
 from suitewright.forms import register as register_forms
 

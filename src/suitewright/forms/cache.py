@@ -1,21 +1,16 @@
-"""Cache path resolution for Forms cache-first workflows."""
+"""Cache path resolution for Forms cache-first workflows.
+
+Thin wrapper delegating to CacheStore("forms") from the shared _core
+subpackage. Preserves the original public API (cache_root, cache_path,
+ensure_cache_root) for backward compatibility.
+"""
 
 from __future__ import annotations
 
-from pathlib import Path
+from suitewright._core.cache import CacheStore
 
-from suitewright import paths
+_store = CacheStore("forms")
 
-
-def cache_root() -> Path:
-    return paths.resolve("cache_dir") / "forms"
-
-
-def cache_path(form_id: str) -> Path:
-    return cache_root() / f"{form_id}.json"
-
-
-def ensure_cache_root() -> Path:
-    root = cache_root()
-    root.mkdir(parents=True, exist_ok=True)
-    return root
+cache_root = _store.root
+cache_path = _store.path
+ensure_cache_root = _store.ensure_root

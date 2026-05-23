@@ -34,7 +34,9 @@ class TestVersion:
             parse(["--version"])
         assert exc.value.code == 0
         captured = capsys.readouterr()
-        assert "0.0.1" in captured.out
+        from suitewright import __version__
+
+        assert __version__ in captured.out
 
 
 class TestTopLevel:

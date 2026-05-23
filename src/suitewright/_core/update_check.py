@@ -54,7 +54,7 @@ def _fetch_latest() -> str | None:
             "https://pypi.org/pypi/suitewright/json",
             headers={"Accept": "application/json"},
         )
-        with urllib.request.urlopen(req, timeout=3) as resp:  # noqa: S310
+        with urllib.request.urlopen(req, timeout=3) as resp:  # nosec B310  # noqa: S310
             data = json.loads(resp.read())
             return data.get("info", {}).get("version")
     except Exception:

@@ -177,14 +177,30 @@ class TestDocsArgparse:
     def test_help(self, capsys):
         assert_help(["docs", "--help"], "docs")
 
-    def test_get_requires_doc_id(self):
-        assert_error(["docs", "get"])
+    def test_cache_help(self, capsys):
+        assert_help(["docs", "cache", "--help"], "cache")
 
-    def test_show_structure_requires_doc_id(self):
-        assert_error(["docs", "show-structure"])
+    def test_query_help(self, capsys):
+        assert_help(["docs", "query", "--help"], "query")
 
-    def test_show_structure_full_text_flag(self):
-        ns = parse(["docs", "show-structure", "DOC123", "--full-text"])
+    def test_mutate_help(self, capsys):
+        assert_help(["docs", "mutate", "--help"], "mutate")
+
+    def test_table_help(self, capsys):
+        assert_help(["docs", "table", "--help"], "table")
+
+    def test_cache_fetch_requires_doc_id(self):
+        assert_error(["docs", "cache", "fetch"])
+
+    def test_cache_fetch_with_doc_id(self):
+        ns = parse(["docs", "cache", "fetch", "DOC123"])
+        assert ns.doc_id == "DOC123"
+
+    def test_query_structure_requires_doc_id(self):
+        assert_error(["docs", "query", "structure"])
+
+    def test_query_structure_full_text_flag(self):
+        ns = parse(["docs", "query", "structure", "DOC123", "--full-text"])
         assert ns.full_text is True
 
     def test_create_requires_title(self):
@@ -194,34 +210,68 @@ class TestDocsArgparse:
         ns = parse(["docs", "create", "--title", "My Doc"])
         assert ns.title == "My Doc"
 
-    def test_insert_table_requires_all(self):
-        assert_error(["docs", "insert-table", "DOC123", "--rows", "2"])
+    def test_mutate_insert_table_requires_all(self):
+        assert_error(["docs", "mutate", "insert-table", "DOC123", "--rows", "2"])
 
-    def test_insert_table_all_args(self):
-        ns = parse(["docs", "insert-table", "DOC123", "--rows", "2", "--cols", "3", "--index", "1"])
+    def test_mutate_insert_table_all_args(self):
+        ns = parse(
+            [
+                "docs",
+                "mutate",
+                "insert-table",
+                "DOC123",
+                "--rows",
+                "2",
+                "--cols",
+                "3",
+                "--index",
+                "1",
+            ]
+        )
         assert ns.rows == 2
         assert ns.cols == 3
         assert ns.index == 1
 
-    def test_insert_table_invalid_type(self):
+    def test_mutate_insert_table_invalid_type(self):
         assert_error(
-            ["docs", "insert-table", "DOC123", "--rows", "abc", "--cols", "3", "--index", "1"]
+            [
+                "docs",
+                "mutate",
+                "insert-table",
+                "DOC123",
+                "--rows",
+                "abc",
+                "--cols",
+                "3",
+                "--index",
+                "1",
+            ]
         )
 
     def test_table_get_optional_table(self):
-        ns = parse(["docs", "table-get", "DOC123"])
+        ns = parse(["docs", "table", "get", "DOC123"])
         assert ns.table is None
 
     def test_table_get_with_table(self):
-        ns = parse(["docs", "table-get", "DOC123", "--table", "0"])
+        ns = parse(["docs", "table", "get", "DOC123", "--table", "0"])
         assert ns.table == 0
 
-    def test_style_range_requires_indexes(self):
-        assert_error(["docs", "style-range", "DOC123"])
+    def test_mutate_style_range_requires_indexes(self):
+        assert_error(["docs", "mutate", "style-range", "DOC123"])
 
-    def test_style_range_with_bold(self):
+    def test_mutate_style_range_with_bold(self):
         ns = parse(
-            ["docs", "style-range", "DOC123", "--start-index", "1", "--end-index", "10", "--bold"]
+            [
+                "docs",
+                "mutate",
+                "style-range",
+                "DOC123",
+                "--start-index",
+                "1",
+                "--end-index",
+                "10",
+                "--bold",
+            ]
         )
         assert ns.bold is True
 
@@ -240,6 +290,16 @@ class TestDocsArgparse:
     def test_plan_with_requests_file(self):
         ns = parse(["docs", "plan", "DOC123", "--requests-file", "/tmp/req.json"])
         assert ns.requests_file == "/tmp/req.json"
+
+    # Verify old flat commands no longer exist
+    def test_old_flat_get_removed(self):
+        assert_error(["docs", "get"])
+
+    def test_old_flat_show_structure_removed(self):
+        assert_error(["docs", "show-structure"])
+
+    def test_old_flat_table_get_removed(self):
+        assert_error(["docs", "table-get"])
 
 
 class TestFormsArgparse:

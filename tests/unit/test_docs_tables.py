@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from suitewright.docs.tables import (
+from suitewright.docs.mutate import (
     _cell_inner_range,
+    _ensure_rectangular,
+)
+from suitewright.docs.tables import (
     _cell_text,
     _collect_tables,
-    _ensure_rectangular,
     _table_summary,
 )
 

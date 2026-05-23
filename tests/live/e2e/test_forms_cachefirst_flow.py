@@ -17,7 +17,7 @@ def test_forms_cachefirst_flow(sandbox, tmp_path):
     sandbox.track("drive", form_id)
 
     # 2. Move into sandbox folder.
-    from suitewright.service import build_service
+    from suitewright._core.service import build_service
 
     drive = build_service("drive", "v3")
     drive.files().update(

@@ -14,7 +14,7 @@ def test_doc_collab_flow(sandbox):
     doc_id = created["documentId"]
     sandbox.track("drive", doc_id)
 
-    from suitewright.service import build_service
+    from suitewright._core.service import build_service
 
     drive = build_service("drive", "v3")
     drive.files().update(
@@ -24,26 +24,29 @@ def test_doc_collab_flow(sandbox):
         fields="id, parents",
     ).execute()
 
-    # 2. Append seed content.
-    cli_run(["docs", "append", doc_id, "--text", "agent-seed-line"])
+    # 2. Populate cache and append seed content.
+    cli_run(["docs", "cache", "fetch", doc_id])
+    cli_run(["docs", "mutate", "append", doc_id, "--text", "agent-seed-line"])
 
     # 3. Inspect structure.
-    structure = cli_run(["docs", "show-structure", doc_id, "--full-text"])
+    cli_run(["docs", "cache", "fetch", doc_id])
+    structure = cli_run(["docs", "query", "structure", doc_id, "--full-text"])
     assert structure["documentId"] == doc_id
-    assert structure["summary"]["paragraphs"] >= 1
+    paragraph_blocks = [b for b in structure["blocks"] if b["kind"] == "paragraph"]
+    assert len(paragraph_blocks) >= 1
 
     # 4. Dry-run validates request shape, no mutation.
     dry = cli_run(
         [
             "docs",
+            "cache",
             "update",
             doc_id,
-            "--requests-file",
             str(REQUESTS_FILE),
             "--dry-run",
         ]
     )
-    assert dry["dryRun"] is True
+    assert dry["status"] == "dry-run"
     assert dry["requestCount"] == 2
 
     # 5. Build a plan artifact (read-only).
@@ -63,9 +66,9 @@ def test_doc_collab_flow(sandbox):
     apply_result = cli_run(
         [
             "docs",
+            "cache",
             "update",
             doc_id,
-            "--requests-file",
             str(REQUESTS_FILE),
         ]
     )
@@ -73,8 +76,9 @@ def test_doc_collab_flow(sandbox):
     assert "replies" in apply_result or apply_result is not None
 
     # 7. Confirm fixture text now appears in the body.
-    final = cli_run(["docs", "get", doc_id])
-    assert "FIXTURE-INSERTED-LINE" in final["body"]
+    cli_run(["docs", "cache", "fetch", doc_id])
+    final = cli_run(["docs", "query", "get", doc_id], expect_json=False)
+    assert "FIXTURE-INSERTED-LINE" in final
 
     # 8. Verify comments list returns a dict with comments key.
     comments = cli_run(["docs", "comments", "list", doc_id])

@@ -20,7 +20,7 @@ def fresh_form(sandbox):
     sandbox.track("drive", form_id)
 
     # Move into sandbox folder via Drive API (CLI has no forms move).
-    from suitewright.service import build_service
+    from suitewright._core.service import build_service
 
     drive = build_service("drive", "v3")
     drive.files().update(

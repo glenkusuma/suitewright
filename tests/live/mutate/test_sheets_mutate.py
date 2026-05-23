@@ -10,7 +10,7 @@ def sheet(sandbox):
     """Create a Google Sheet inside the sandbox folder via the Drive API.
     The Sheets CLI does not expose `create`; this is test infrastructure.
     """
-    from suitewright.service import build_service
+    from suitewright._core.service import build_service
 
     drive = build_service("drive", "v3")
     name = sandbox.name("sheet")

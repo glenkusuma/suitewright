@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from suitewright import render
+from suitewright._core import render
 
 
 def _para(text: str) -> dict:

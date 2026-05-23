@@ -77,8 +77,8 @@ select = ["E", "F", "W", "I", "B", "UP", "RUF", "S"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "S105", "S108"]
-"src/suitewright/paths.py" = ["S105"]
-"src/suitewright/auth.py" = ["S110", "S603"]
+"src/suitewright/_core/paths.py" = ["S105"]
+"src/suitewright/_core/auth.py" = ["S110", "S603"]
 "tests/live/conftest.py" = ["S110"]
 "tests/live/scripts/preflight.py" = ["S603", "S607"]
 "tests/live/scripts/preflight-live.py" = ["S603", "S607"]
@@ -92,7 +92,7 @@ select = ["E", "F", "W", "I", "B", "UP", "RUF", "S"]
 
 [tool.mypy]
 python_version = "3.11"
-files = ["src/suitewright/paths.py", "src/suitewright/cli.py"]
+files = ["src/suitewright/_core/paths.py", "src/suitewright/cli.py"]
 
 [tool.bandit]
 exclude_dirs = ["tests", "_local"]

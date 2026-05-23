@@ -12,9 +12,9 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from suitewright import render
-from suitewright.docs.basic import load_docs_requests, summarize_docs_requests
-from suitewright.service import build_service
+from suitewright._core.render import show_structure_block
+from suitewright._core.service import build_service
+from suitewright.docs.mutate import load_docs_requests, summarize_docs_requests
 
 PLAN_VERSION = "1"
 
@@ -33,7 +33,7 @@ def cmd_plan(args):
     blocks = []
     structure_summary = {"paragraphs": 0, "tables": 0, "tableOfContents": 0}
     for index, element in enumerate(doc.get("body", {}).get("content", [])):
-        block = render.show_structure_block(element, index, full_text=False)
+        block = show_structure_block(element, index, full_text=False)
         if not block:
             continue
         if block["kind"] == "paragraph":

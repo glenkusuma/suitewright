@@ -14,8 +14,8 @@ from suitewright._core import paths as _core_paths
 def clear_env(monkeypatch):
     for var in (
         "SUITEWRIGHT_ROOT",
-        "SUITEWRIGHT_TOKEN",
-        "SUITEWRIGHT_CLIENT_SECRET",
+        "SUITEWRIGHT_TOKEN_PATH",
+        "SUITEWRIGHT_CLIENT_SECRET_PATH",
         "SUITEWRIGHT_CACHE_DIR",
         "SUITEWRIGHT_AUTH_DIR",
         "XDG_CONFIG_HOME",
@@ -47,12 +47,12 @@ class TestReadPyprojectName:
 class TestEnvVarOverrides:
     def test_token_env_var(self, monkeypatch, tmp_path):
         token = tmp_path / "my_token.json"
-        monkeypatch.setenv("SUITEWRIGHT_TOKEN", str(token))
+        monkeypatch.setenv("SUITEWRIGHT_TOKEN_PATH", str(token))
         assert paths.resolve("token") == token
 
     def test_client_secret_env_var(self, monkeypatch, tmp_path):
         cs = tmp_path / "secret.json"
-        monkeypatch.setenv("SUITEWRIGHT_CLIENT_SECRET", str(cs))
+        monkeypatch.setenv("SUITEWRIGHT_CLIENT_SECRET_PATH", str(cs))
         assert paths.resolve("client_secret") == cs
 
     def test_cache_dir_env_var(self, monkeypatch, tmp_path):
@@ -93,11 +93,11 @@ class TestExists:
     def test_exists_true(self, monkeypatch, tmp_path):
         token = tmp_path / "google_token.json"
         token.write_text("{}")
-        monkeypatch.setenv("SUITEWRIGHT_TOKEN", str(token))
+        monkeypatch.setenv("SUITEWRIGHT_TOKEN_PATH", str(token))
         assert paths.exists("token") is True
 
     def test_exists_false(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("SUITEWRIGHT_TOKEN", str(tmp_path / "missing.json"))
+        monkeypatch.setenv("SUITEWRIGHT_TOKEN_PATH", str(tmp_path / "missing.json"))
         assert paths.exists("token") is False
 
 
@@ -117,20 +117,20 @@ class TestDescribe:
         assert "clientSecretExists" in info
 
     def test_env_mode_with_token(self, monkeypatch, tmp_path):
-        """Mode 'env' when SUITEWRIGHT_TOKEN is set."""
+        """Mode 'env' when SUITEWRIGHT_TOKEN_PATH is set."""
         token_path = tmp_path / "my_token.json"
         token_path.write_text("{}")
-        monkeypatch.setenv("SUITEWRIGHT_TOKEN", str(token_path))
+        monkeypatch.setenv("SUITEWRIGHT_TOKEN_PATH", str(token_path))
         monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: None)
         info = paths.describe()
         assert info["mode"] == "env"
         assert info["tokenExists"] is True
 
     def test_env_mode_with_client_secret(self, monkeypatch, tmp_path):
-        """Mode 'env' when SUITEWRIGHT_CLIENT_SECRET is set."""
+        """Mode 'env' when SUITEWRIGHT_CLIENT_SECRET_PATH is set."""
         cs_path = tmp_path / "secret.json"
         cs_path.write_text("{}")
-        monkeypatch.setenv("SUITEWRIGHT_CLIENT_SECRET", str(cs_path))
+        monkeypatch.setenv("SUITEWRIGHT_CLIENT_SECRET_PATH", str(cs_path))
         monkeypatch.setattr(_core_paths, "_detect_dev_root", lambda: None)
         info = paths.describe()
         assert info["mode"] == "env"
